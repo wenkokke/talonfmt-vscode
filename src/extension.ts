@@ -47,9 +47,10 @@ async function talonfmt(
       vscode.window.showErrorMessage(`Path to talonfmt is null`)
       rejects('Unable to call talonfmt')
     } else {
-      const indent = vscode.workspace.getConfiguration('talonfmt').indent
+      const indentSize =
+        vscode.workspace.getConfiguration('talonfmt')['indent-size']
       const cmd = child_process.spawn(talonfmtPath, [
-        `--indent-size=${indent}`,
+        `--indent-size=${indentSize}`,
         filePath
       ])
       const result: Buffer[] = []

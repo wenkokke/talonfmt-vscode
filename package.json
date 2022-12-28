@@ -14,7 +14,7 @@
   "keywords": [
     "talon"
   ],
-  "version": "0.1.0",
+  "version": "0.1.1",
   "engines": {
     "vscode": "^1.51.0"
   },
@@ -39,7 +39,7 @@
           "default": "",
           "description": "Path to talonfmt executable\nYou can use ${HOME}, ${home}, or ~/ to represent user's home directory.\nIf not set, the extension will find talonfmt in PATH."
         },
-        "talonfmt.indent": {
+        "talonfmt.indent-size": {
           "type": "integer",
           "default": 4,
           "description": "Indentation"

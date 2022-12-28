@@ -1,2 +1,3 @@
-# talonfmt-vscode
-VSCode Extension for Talon Formatter
+# VSCode Extension for Talon Formatter
+
+Provides a VSCode Formatter for .talon files via [talonfmt](https://github.com/wenkokke/talonfmt#readme).

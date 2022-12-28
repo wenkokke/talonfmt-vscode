@@ -5,10 +5,12 @@ import * as child_process from 'child_process'
 import * as tmp from 'tmp'
 import * as fs from 'fs'
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
 const commandExists = require('command-exists').sync
+
 const exeName = 'talonfmt'
 
-export function activate(_context: vscode.ExtensionContext) {
+export function activate(_context: vscode.ExtensionContext): void {
   vscode.languages.registerDocumentFormattingEditProvider(
     'talon',
     new TalonFormatProvider()
@@ -41,43 +43,46 @@ function findLocal(): string | null {
   return null
 }
 
-function talonfmt(filePath: string, nominalPath: string): Promise<string> {
+async function talonfmt(
+  filePath: string,
+  nominalPath: string
+): Promise<string> {
   return new Promise((resolve, rejects) => {
     const talonfmtPath = findManual() ?? findLocal()
     if (talonfmtPath === null) {
       vscode.window.showErrorMessage(`Path to talonfmt is null`)
       rejects('Unable to call talonfmt')
-    }
-    const indent = vscode.workspace.getConfiguration('talonfmt').indent
-
-    const cmd = child_process.spawn(talonfmtPath!, [
-      `--indent-size=${indent}`,
-      filePath
-    ])
-    const result: Buffer[] = []
-    const err: Buffer[] = []
-    cmd.stdout.on('data', data => {
-      result.push(Buffer.from(data))
-    })
-    cmd.stderr.on('data', data => {
-      err.push(Buffer.from(data))
-    })
-    cmd.on('exit', _ => {
-      const r = Buffer.concat(result).toString()
-      const e = Buffer.concat(err)
-        .toString()
-        .replace(new RegExp(filePath, 'g'), path.basename(nominalPath))
-      if (r.length > 0) {
-        resolve(r)
-      } else {
-        vscode.window.showErrorMessage(`talonfmt: ${e}`)
+    } else {
+      const indent = vscode.workspace.getConfiguration('talonfmt').indent
+      const cmd = child_process.spawn(talonfmtPath, [
+        `--indent-size=${indent}`,
+        filePath
+      ])
+      const result: Buffer[] = []
+      const err: Buffer[] = []
+      cmd.stdout.on('data', data => {
+        result.push(Buffer.from(data))
+      })
+      cmd.stderr.on('data', data => {
+        err.push(Buffer.from(data))
+      })
+      cmd.on('exit', _exitCode => {
+        const r = Buffer.concat(result).toString()
+        const e = Buffer.concat(err)
+          .toString()
+          .replace(new RegExp(filePath, 'g'), path.basename(nominalPath))
+        if (r.length > 0) {
+          resolve(r)
+        } else {
+          vscode.window.showErrorMessage(`talonfmt: ${e}`)
+          rejects(`error: ${e}`)
+        }
+      })
+      cmd.on('error', e => {
+        vscode.window.showErrorMessage(`Failed to call talonfmt: ${e}`)
         rejects(`error: ${e}`)
-      }
-    })
-    cmd.on('error', e => {
-      vscode.window.showErrorMessage(`Failed to call talonfmt: ${e}`)
-      rejects(`error: ${e}`)
-    })
+      })
+    }
   })
 }
 

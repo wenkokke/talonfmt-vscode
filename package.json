@@ -1,0 +1,70 @@
+{
+  "name": "talonfmt-vscode",
+  "displayName": "Talon Formatter",
+  "description": "Format .talon files using talonfmt",
+  "homepage": "https://github.com/wenkokke/talonfmt-vscode",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wenkokke/talonfmt-vscode"
+  },
+  "bugs": {
+    "url": "https://github.com/wenkokke/talonfmt-vscode/issues"
+  },
+  "license": "MIT",
+  "keywords": [
+    "talon"
+  ],
+  "version": "0.1.0",
+  "engines": {
+    "vscode": "^1.51.0"
+  },
+  "extensionDependencies": [
+    "mrob95.vscode-talonscript"
+  ],
+  "categories": [
+    "Formatters"
+  ],
+  "activationEvents": [
+    "onLanguage:talon"
+  ],
+  "main": "./dist/extension.js",
+  "publisher": "wenkokke",
+  "icon": "icons/talon_border_small.bmp",
+  "contributes": {
+    "configuration": {
+      "title": "talonfmt-vscode configuration",
+      "properties": {
+        "talonfmt.path": {
+          "type": "string",
+          "default": "",
+          "description": "Path to talonfmt executable\nYou can use ${HOME}, ${home}, or ~/ to represent user's home directory.\nIf not set, the extension will find talonfmt in PATH."
+        },
+        "talonfmt.indent": {
+          "type": "integer",
+          "default": 4,
+          "description": "Indentation"
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "command-exists": "^1.2.9",
+    "tmp": "^0.2.1"
+  },
+  "devDependencies": {
+    "@types/command-exists": "^1.2.0",
+    "@types/node": "^12.20.12",
+    "@types/tmp": "^0.2.0",
+    "@types/vscode": "^1.51.0",
+    "@typescript-eslint/eslint-plugin": "^4.22.1",
+    "@typescript-eslint/parser": "^4.22.1",
+    "eslint": "^7.25.0",
+    "typescript": "^4.2.4"
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run build",
+    "build": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts"
+  }
+}

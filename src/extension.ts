@@ -18,22 +18,22 @@ export function activate(_context: vscode.ExtensionContext): void {
 }
 
 function findManual(): string | null {
-  let path = vscode.workspace.getConfiguration('talonfmt').path
-  if (path === '') {
+  let talonfmtPath = vscode.workspace.getConfiguration('talonfmt').path
+  if (talonfmtPath === '') {
     return null
   }
-  path = path
+  talonfmtPath = talonfmtPath
     .replace('${HOME}', os.homedir)
     .replace('${home}', os.homedir)
     .replace(/^~/, os.homedir)
 
-  if (!commandExists(path)) {
+  if (!commandExists(talonfmtPath)) {
     vscode.window.showErrorMessage(
-      `Path to talonfmt is set to an unknown place: ${path}`
+      `Path to talonfmt is set to an unknown place: ${talonfmtPath}`
     )
-    throw new Error(`Unable to find ${path}`)
+    throw new Error(`Unable to find ${talonfmtPath}`)
   }
-  return path
+  return talonfmtPath
 }
 
 function findLocal(): string | null {
@@ -67,33 +67,35 @@ async function talonfmt(
         err.push(Buffer.from(data))
       })
       cmd.on('exit', _exitCode => {
-        const r = Buffer.concat(result).toString()
-        const e = Buffer.concat(err)
+        const output = Buffer.concat(result).toString()
+        const errorMessage = Buffer.concat(err)
           .toString()
           .replace(new RegExp(filePath, 'g'), path.basename(nominalPath))
-        if (r.length > 0) {
-          resolve(r)
+        if (output.length > 0) {
+          resolve(output)
         } else {
-          vscode.window.showErrorMessage(`talonfmt: ${e}`)
-          rejects(`error: ${e}`)
+          vscode.window.showErrorMessage(`talonfmt: ${errorMessage}`)
+          rejects(Error(errorMessage))
         }
       })
-      cmd.on('error', e => {
-        vscode.window.showErrorMessage(`Failed to call talonfmt: ${e}`)
-        rejects(`error: ${e}`)
+      cmd.on('error', error => {
+        vscode.window.showErrorMessage(
+          `Failed to call talonfmt: ${error.message}`
+        )
+        rejects(error)
       })
     }
   })
 }
 
 class TalonFormatProvider implements vscode.DocumentFormattingEditProvider {
-  provideDocumentFormattingEdits(
+  async provideDocumentFormattingEdits(
     document: vscode.TextDocument
-  ): Thenable<vscode.TextEdit[]> {
+  ): Promise<vscode.TextEdit[]> {
     return new Promise((resolve, rejects) => {
       tmp.file(
         {prefix: '.talonfmt', tmpdir: path.dirname(document.fileName)},
-        function _tempFileCreated(tmpErr, tmpPath, _fd, cleanupCallback) {
+        async function _tempFileCreated(tmpErr, tmpPath, _fd, cleanupCallback) {
           if (tmpErr) {
             throw tmpErr
           }
@@ -101,16 +103,17 @@ class TalonFormatProvider implements vscode.DocumentFormattingEditProvider {
           vscode.window.showInformationMessage(
             `Formatting ${path.basename(document.fileName)}`
           )
-
-          talonfmt(tmpPath, document.fileName)
-            .then(r => {
-              const range = document.validateRange(
-                new vscode.Range(0, 0, Infinity, Infinity)
-              )
-              resolve([new vscode.TextEdit(range, r)])
-            })
-            .catch(rejects)
-            .finally(cleanupCallback)
+          try {
+            const result = await talonfmt(tmpPath, document.fileName)
+            const range = document.validateRange(
+              new vscode.Range(0, 0, Infinity, Infinity)
+            )
+            resolve([new vscode.TextEdit(range, result)])
+          } catch (error) {
+            rejects(error)
+          } finally {
+            cleanupCallback()
+          }
         }
       )
     })

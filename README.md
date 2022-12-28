@@ -3,3 +3,8 @@
 # VSCode Extension for Talon Formatter
 
 Provides a VSCode Formatter for .talon files via [talonfmt](https://github.com/wenkokke/talonfmt#readme).
+
+You must install [talonfmt](https://github.com/wenkokke/talonfmt#readme) before using this plugin, e.g., by calling
+```bash
+pip install talonfmt
+```

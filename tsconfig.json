@@ -3,7 +3,6 @@
 		"target": "es6",
 		"module": "commonjs",
 		"outDir": "./dist",
-		"rootDir": "./src",
 		"lib": [
 			"es6"
 		],
@@ -13,6 +12,7 @@
 		"esModuleInterop": true,
 	},
 	"include": [
+		"webpack.config.js",
 		"src/**/*.ts"
 	]
 }
